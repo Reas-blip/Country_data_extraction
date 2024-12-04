@@ -6,6 +6,8 @@ import asyncio
 import aiofiles
 from icecream import ic
 
+# from scripts_for_data_extraction.data_extracting_script import write_country_to_resume_temp_file
+
 async def append_prompt_data_to_file(csv_file_path:  Path | str, prompt_table_data: str):
    async with aiofiles.open(csv_file_path, "a") as csv_file:
       # print()
@@ -46,24 +48,24 @@ async def extract_prompt_data(html_file_dir: Path | str, industry: str, data: st
       await append_prompt_data_to_file(save_data_file_dir, data)
       data = ""
       
+async def read_data_from_file(file_path: Path | str):
+   with open(file_path, "r") as file:
+      return file.read()     
+      
 async def run():
-   path: Path = Path(r'C:\Users\Okeniyi Treasure\Documents\Python\requests')
-   industry_dict = await read_industry_dict_from_file("text.json")
-   industries = industry_dict.keys()
+   path: Path = Path(r'data_extracted')
    files: Path = Path(rf'C:\Users\Okeniyi Treasure\Documents\Python\requests\Country_data_extraction\2024-11-23')
+   csv_file_list = path.rglob("*.csv")      
    # print(list(files.rglob("*.csv")))
-   for folder in files.rglob("*.csv"):
-      # print(files)
-      # print(folder)
-      if os.path.exists(folder):
-         os.remove(folder)
-      if not os.path.exists(folder.parent):
-         os.mkdir(folder.parent)
-      file = Path(rf'C:\Users\Okeniyi Treasure\Documents\Python\requests\Country_data_extraction\{folder.name.removesuffix(".csv")}')
-      data = folder.name.removesuffix(".csv") + "\n"
-      for html in file.glob("*.html"):
-         print(html)
-         await extract_prompt_data(html, html.name, data, folder)
+   country_list = []
+   for file in csv_file_list:
+      file_str = await read_data_from_file(file)
+      no_of_tables = re.findall(r'[0-9].{1,2}\|.+\|.+\|.+\|.+\|.+', file_str)
+      print(len(no_of_tables))
+      if len(no_of_tables) != 163:
+         country_list.append(file.stem)     
+
+   await write_country_list_without_filelock(country_list, "country.json")
       # print(file)
       # await extract_prompt_data(file, industry, "ghana.csv")
    # with open("industry_data.csv", "r")as filee:
@@ -77,6 +79,10 @@ async def read_industry_dict_from_file(file_path: str) -> dict[str, list[str]]:
    with open(file_path, "r") as file:
       industry_dict: str = file.read()
    return json.loads(industry_dict)
+async def write_country_list_without_filelock(country_list: list[str], file_path: Path | str=r"information_files\country.json"):
+   with open(file_path, "w") as file:
+      file.write(json.dumps(country_list))
+
 
 
    
