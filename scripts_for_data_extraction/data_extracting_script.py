@@ -233,7 +233,7 @@ async def async_send_prompt_list(dict_of_industries_to_sectors_prompt_list: dict
 
    tasks: list[Coroutine[Any, Any, None]] = []
    context_number = 1
-   concurrency_limit = 11
+   concurrency_limit = 5 
    for industry, prompts_per_sector_list in industry_dict.items():
       task: Coroutine[Any, Any, None] = send_prompts_per_industry(prompts_per_sector_list, industry, country, context_number)
       print(context_number)
