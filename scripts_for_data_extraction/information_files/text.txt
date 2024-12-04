@@ -1,0 +1,174 @@
+Energy Sector
+1. Oil & Gas Drilling
+2. Oil & Gas Equipment & Services
+3. Integrated Oil & Gas
+4. Oil & Gas Exploration & Production
+5. Oil & Gas Refining & Marketing
+6. Oil & Gas Storage & Transportation
+7. Coal & Consumable Fuels
+Materials Sector
+1. Chemicals
+2. Commodity Chemicals
+3. Diversified Chemicals
+4. Fertilizers & Agricultural Chemicals
+5. Industrial Gases
+6. Specialty Chemicals
+7. Construction Materials
+8. Containers & Packaging
+9. Metal, Glass & Plastic Containers
+10. Paper & Plastic Packaging
+11. Aluminum
+12. Diversified Metals & Mining
+13. Copper
+14. Gold
+15. Precious Metals & Minerals
+16. Silver
+17. Steel
+18. Forest Products
+19. Paper Products
+Industrial Sector
+1. Aerospace & Defense
+2. Building Products
+3. Construction & Engineering
+4. Electrical Components & Equipment
+5. Heavy Electrical Equipment
+6. Industrial Conglomerates
+7. Construction Machinery & Heavy Transportation Equipment
+8. Agricultural & Farm Machinery
+9. Industrial Machinery & Supplies & Components
+10. Trading Companies & Distributors
+11. Commercial Services & Supplies
+12. Commercial Printing
+13. Environmental & Facilities Services
+14. Office Services & Supplies
+15. Diversified Support Services
+16. Security & Alarm Services
+17. Human Resource & Employment Services
+18. Research & Consulting Services
+19. Data Processing & Outsourced Services
+20. Air Freight & Logistics
+21. Passenger Airlines
+22. Marine Transportation
+23. Rail Transportation
+24. Cargo Ground Transportation
+25. Passenger Ground Transportation
+26. Transportation Infrastructure
+27. Airport Services
+Consumer Discretionary Sector
+1. Automotive Parts & Equipment
+2. Tires & Rubber
+3. Automobile Manufacturers
+4. Motorcycle Manufacturers
+5. Consumer Electronics
+6. Home Furnishings
+7. Homebuilding
+8. Household Appliances
+9. Housewares & Specialties
+10. Leisure Products
+11. Apparel, Accessories & Luxury Goods
+12. Footwear
+13. Textiles
+14. Casinos & Gaming
+15. Hotels, Resorts & Cruise Lines
+16. Leisure Facilities
+17. Restaurants
+18. Education Services
+19. Specialized Consumer Services
+20. Distributors
+21. Broadline Retail
+22. Specialty Retail
+23. Apparel Retail
+24. Computer & Electronics Retail
+25. Home Improvement Retail
+26. Automotive Retail
+27. Home Furnishing Retail
+Consumer Staples Sector
+1. Drug Retail
+2. Food Distributors
+3. Food Retail
+4. Consumer Staples Merchandise Retail
+5. Brewers
+6. Distillers & Vintners
+7. Soft Drinks & Non-alcoholic Beverages
+8. Agricultural Products & Services
+9. Packaged Foods & Meats
+10. Tobacco
+11. Household Products
+12. Personal Care Products
+Health Care Sector
+1. Health Care Equipment
+2. Health Care Supplies
+3. Health Care Distributors
+4. Health Care Services
+5. Health Care Facilities
+6. Managed Health Care
+7. Health Care Technology
+8. Biotechnology
+9. Pharmaceuticals
+10. Life Sciences Tools & Services
+Financial Sector
+1. Diversified Banks
+2. Regional Banks
+3. Diversified Financial Services
+4. Multi-Sector Holdings
+5. Specialized Finance
+6. Commercial & Residential Mortgage Finance
+7. Transaction & Payment Processing
+8. Consumer Finance
+9. Asset Management & Custody Banks
+10. Investment Banking & Brokerage
+11. Financial Exchanges & Data
+12. Mortgage Real Estate Investment Trusts (REITs)
+13. Insurance Brokers
+14. Life & Health Insurance
+15. Multi-line Insurance
+16. Property & Casualty Insurance
+17. Reinsurance
+Information Technology Sector
+1. IT Consulting & Other Services
+2. Internet Services & Infrastructure
+3. Application Software
+4. Systems Software
+5. Communications Equipment
+6. Technology Hardware, Storage & Peripherals
+7. Electronic Equipment, Instruments & Components
+8. Electronic Manufacturing Services
+9. Technology Distributors
+10. Semiconductor Materials & Equipment
+11. Semiconductors
+Communication Services
+1. Alternative Carriers
+2. Integrated Telecommunication Services
+3. Wireless Telecommunication Services
+4. Advertising
+5. Broadcasting
+6. Cable & Satellite
+7. Publishing
+8. Movies & Entertainment
+9. Interactive Home Entertainment
+10. Interactive Media & Services
+Utilities
+1. Electric Utilities
+2. Gas Utilities
+3. Multi-Utilities
+4. Water Utilities
+5. Independent Power Producers & Energy Traders
+6. Renewable Electricity
+Real Estate
+1. Diversified REITs
+2. Industrial REITs
+3. Hotel & Resort REITs
+4. Office REITs
+5. Health Care REITs
+6. Multi-Family Residential REITs
+7. Single-Family Residential REITs
+8. Retail REITs
+9. Other Specialized REITs
+10. Self-Storage REITs
+11. Telecom Tower REITs
+12. Timber REITs
+13. Data Center REITs
+14. Diversified Real Estate Activities
+15. Real Estate Operating Companies
+16. Real Estate Development
+17. Real Estate Services
