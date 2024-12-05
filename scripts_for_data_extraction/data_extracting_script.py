@@ -14,13 +14,12 @@ from table import extract_prompt_data
 from filelock import BaseFileLock, WindowsFileLock
 
 async def generate_prompt(industry: str, sector: str, country: str) -> str | None:
-   prompt: str = f"""According to the industry reputation and project history metrics, generate for the top 10 companies under the {industry} sub-industry in the {sector} Sector in {country} ,please write it in plain text accroding to the instructions below,1. Ranking 2. Company Name 3. Subindustry 4. Website 5. Careers Page 6. News/Information Page.
+   prompt: str = f"""@GPT-4o According to the industry reputation and project history metrics, generate for the top 10 companies under the {industry} sub-industry in the {sector} Sector in {country} ,please write it in plain text accroding to the instructions below,1. Ranking 2. Company Name 3. Subindustry 4. Website 5. Careers Page 6. News/Information Page.
 
 VERY IMPORTANT INSTRUCTION MUST OBEY LIKE SOMEONE'S LIFE DEPENDS ON IT
 do not include disclamers or any notice in this response
 
-please please write the text in a bash code form scripting language code
-dont use bash syntax or anything related to bash just write the text in bash code form
+please please write the text in code form please this helps extraction of data easier
 
 use this example to format the table
 "Ranking|Company Name|Subindustry|Website|Careers Page|News/Information Page
