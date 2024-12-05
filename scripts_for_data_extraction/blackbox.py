@@ -108,6 +108,7 @@ async def ask_blackbox(playwright: Playwright, prompts: list[str], context_numbe
       table: str = await new_page.locator("code").nth(i).inner_text()
       industry_amount: int = len(re.findall(r'[0-9]{2}(?=.{1,2}\|)|(?<![0-9])([0-9]|[0-9]")(?!0)(?=.{1}\||R)', table))
       if industry_amount != 11:
+         print()
          await context.close()
          ic("restarting incomplete")
          return await ask_blackbox(playwright, prompts, context_number)
@@ -246,7 +247,7 @@ async def init_playwright_page(playwright: Playwright, reload_blackbox: bool=Fal
 
 async def init_playwright_new_context(playwright: Playwright) -> BrowserContext:
    # browser: Browser = await setup_browser(playwright)
-   browser: Browser = await playwright.chromium.launch(channel="msedge", headless=True)
+   browser: Browser = await playwright.chromium.launch(channel="msedge", headless=False)
 
    default_context: BrowserContext = await browser.new_context(viewport={'width': 1280, 'height': 720})
    # await default_context.new_page()
