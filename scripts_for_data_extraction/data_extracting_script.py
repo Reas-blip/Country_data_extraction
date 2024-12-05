@@ -19,8 +19,7 @@ async def generate_prompt(industry: str, sector: str, country: str) -> str | Non
 VERY IMPORTANT INSTRUCTION MUST OBEY LIKE SOMEONE'S LIFE DEPENDS ON IT
 do not include disclamers or any notice in this response
 
-please please write the text in a bash code form scripting language code
-dont use bash syntax or anything related to bash just write the text in bash code form
+please please write the text in code form please this helps extraction of data easier
 
 use this example to format the table
 "Ranking|Company Name|Subindustry|Website|Careers Page|News/Information Page
@@ -233,7 +232,7 @@ async def async_send_prompt_list(dict_of_industries_to_sectors_prompt_list: dict
 
    tasks: list[Coroutine[Any, Any, None]] = []
    context_number = 1
-   concurrency_limit = 11
+   concurrency_limit = 5 
    for industry, prompts_per_sector_list in industry_dict.items():
       task: Coroutine[Any, Any, None] = send_prompts_per_industry(prompts_per_sector_list, industry, country, context_number)
       print(context_number)

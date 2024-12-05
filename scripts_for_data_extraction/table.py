@@ -19,17 +19,9 @@ async def extract_prompt_data(html_file_dir: Path | str, industry: str, data: st
    with open(html_file_dir, "r") as file:
       html_text: str = file.read()
    
-   # html_text = re.sub(r'<span[^>]*>|</span>', "", html_text)
    table_list = re.findall(r'<code[^>]*bash[^>]>\s*(?=[^|]+?\|[^|]+?\|)([^<]+)<', html_text)   
-   # table_list = re.findall(r'<code[^>]*bash[^>]>\s*(?=[^|]+?\|[^|]+?\|)([^<]+)<', html_text)   
    reference_list = []
-   # print(table_list)
-   # for table in table_list:
-   #    if table not in reference_list:
-   #    # print(table[1])
-   #       reference_list.append(table)
    subindustry_completed_list = []
-   # print()
    data += f"|||{industry.capitalize()}\n"
    print(len(table_list))
    
@@ -39,11 +31,7 @@ async def extract_prompt_data(html_file_dir: Path | str, industry: str, data: st
       subindustry = re.findall(r'(?<=\|\|\|)(.*)\b', prompt_data)[0] 
       prompt_data = re.sub(r'\|\|\|(.*)\b', "", prompt_data) # type: ignore
       print(subindustry)
-      # subindustry = subindustry.group(1)
-      # try:
-      # if subindustry not in subindustry_completed_list:      
       data += f"|||{subindustry.capitalize()}\n{prompt_data}\n"
-      # print(data)
       subindustry_completed_list.append(subindustry)
       await append_prompt_data_to_file(save_data_file_dir, data)
       data = ""
@@ -53,19 +41,31 @@ async def read_data_from_file(file_path: Path | str):
       return file.read()     
       
 async def run():
-   path: Path = Path(r'data_extracted')
+   path: Path = Path(r'../data_extracted')
    files: Path = Path(rf'C:\Users\Okeniyi Treasure\Documents\Python\requests\Country_data_extraction\2024-11-23')
    csv_file_list = path.rglob("*.csv")      
-   # print(list(files.rglob("*.csv")))
-   country_list = []
+   print(list(files.rglob("*.csv")))
+   country_dict = {}
    for file in csv_file_list:
-      file_str = await read_data_from_file(file)
+      country = file.stem
+      file_str = (await read_data_from_file(file)).replace(f"|||{country}", "")
       no_of_tables = re.findall(r'[0-9].{1,2}\|.+\|.+\|.+\|.+\|.+', file_str)
       print(len(no_of_tables))
-      if len(no_of_tables) != 163:
-         country_list.append(file.stem)     
+      if len(no_of_tables) == 163:
+         continue        
+      industry_table_list = re.findall(r'\|\|\|[^|]*?(?=\s+\|\|\|)[\w\W]*?(?=\|\|\|[^|]*?\s+\|\|\|)', file_str+"||| |||")
+      for table in industry_table_list:
+         content_list = re.findall(r'[0-9]{1,2}\|.+\|.+\|.+\|.+\|.+', table)
+         if len(content_list) % 10 != 0:
+            industry = re.search(r'(?<=\|\|\|)([^|]*?)(?=\s+\|\|\|)', table).group(1)
+            print(industry)
+            country_dict[country] = industry
+      print(country_dict)
+   await write_country_list_without_filelock(country_dict, "information_files/country_incomplete.json")
+            
+            
 
-   await write_country_list_without_filelock(country_list, "country.json")
+   # await write_country_list_without_filelock(country_list, "country.json")
       # print(file)
       # await extract_prompt_data(file, industry, "ghana.csv")
    # with open("industry_data.csv", "r")as filee:
