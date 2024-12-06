@@ -78,16 +78,26 @@ async def  remove_country_from_resume_temp_file(country: str, file_path: str | P
    
 async def main() -> None:
 
-   concurrency_limit = 3
+   # concurrency_limit = 3
+   retry_dict = await read_industry_dict_from_file(r"information_files\country_incomplete.json")
+   industry_dict: dict[str, list[str]] = await read_industry_dict_from_file("information_files/text.json")
+   for country, industry_list in retry_dict.items():
+      await retry_per_country(industry_dict, country, industry_list)
+   for country in retry_dict.keys():
+      await extract_data_for_each_country(country)
 
-   country_list_file_path = r"information_files\country.json"
-   country_temp_file = r"information_files\contries_temp.json"
-   file_lock = WindowsFileLock(r"information_files\contries_temp.json.lock")
+async def retry_per_country(industry_dict, country, industry_list):
+   industry_sectorprompt_dict = await generate_dict_of_industries_to_sectors_prompt_list(industry_dict, country)
+   await retry_failed_industries(country, industry_list, industry_sectorprompt_dict)
+         
+   # country_list_file_path = r"information_files\country.json"
+   # country_temp_file = r"information_files\contries_temp.json"
+   # file_lock = WindowsFileLock(r"information_files\contries_temp.json.lock")
    # print(str(file_lock))
-   country_list: list[str] = await read_country_list(file_lock, country_list_file_path)
+   # country_list: list[str] = await read_country_list(file_lock, country_list_file_path)
    # print(country_list)
-   await resume_interupted_countries(country_list, concurrency_limit, country_temp_file, file_lock)
-   await send_prompt_and_extract_data_for_countries(concurrency_limit, country_list, country_temp_file, file_lock)   
+   # await resume_interupted_countries(country_list, concurrency_limit, country_temp_file, file_lock)
+   # await send_prompt_and_extract_data_for_countries(concurrency_limit, country_list, country_temp_file, file_lock)   
 
 async def send_prompt_and_extract_data_for_countries(concurrency_limit: int, country_list, country_temp_file, file_lock: BaseFileLock):
    tasks = []
@@ -137,9 +147,9 @@ async def send_prompt_per_country(country: str,
       await async_send_prompt_list(industry_sectorprompt_dict, country)
      
    print("prompting finished")
-   retry_dict: dict[str, str] = await extract_data_for_each_country(country)
-   await retry_failed_industries(retry_dict, industry_sectorprompt_dict)
-   if retry_dict:
+   industry_list: list[str] = await extract_data_for_each_country(country)
+   await retry_failed_industries(country, industry_list, industry_sectorprompt_dict)
+   if industry_list:
       await extract_data_for_each_country(country)
    # randoem = randint(3, 15)
    # print(randoem)
@@ -158,7 +168,6 @@ async def extract_data_for_each_country(country):
    industry_dict = await read_industry_dict_from_file("information_files/text.json")
    industries: dict_keys[str, list[str]] = industry_dict.keys()
 
-   retry_dict: dict[str, str] = {}
    date = datetime.today().date()
    # print(date)
    save_data_file_dir = Path(rf"..\data_extracted\{date}\{country}.csv")
@@ -167,18 +176,17 @@ async def extract_data_for_each_country(country):
    if not save_data_file_dir.parent.exists():
       save_data_file_dir.parent.mkdir()
    data: str = f"|||{country}\n"
-   
+   industry_list = []
    for industry in industries:
       file: Path = Path(rf'..\data_extracted\{country}\{industry}.html')
       # print(save_data_file_dir.exists())
       try:
          await extract_prompt_data(file, industry, data, save_data_file_dir=save_data_file_dir)
       except FileNotFoundError:
-         retry_dict[country] = industry
+         industry_list.append(industry)
          continue
       data = ""
-   ic(retry_dict)
-   return retry_dict
+   return industry_list
 
 async def generate_dict_of_industries_to_sectors_prompt_list(industry_dict, country):
    async def generate_prompt_for_industry(country, industry, sector_list):
@@ -250,11 +258,14 @@ async def async_send_prompt_list(dict_of_industries_to_sectors_prompt_list: dict
 #       await send_prompt_list_per_industry(country, industry, prompts_per_sector_list)
 
 
-async def retry_failed_industries(failed_country_industry_dict, industry_sectorprompt_dict):
+async def retry_failed_industries(country, industry_list, industry_sectorprompt_dict):
    tasks = []
    context_no = 1
-   for country, industry in failed_country_industry_dict.items():
-      prompts_per_sector_list = industry_sectorprompt_dict[industry]
+   # for country, industry_list in failed_country_industry_dict.items():
+   # ic(failed_country_industry_dict)
+   for industry in industry_list:
+      ic(industry.title())
+      prompts_per_sector_list = industry_sectorprompt_dict[industry.title()]
       task = send_prompt_list_per_industry(country, industry, prompts_per_sector_list, context_no)
       context_no += 1
       tasks.append(task)

@@ -96,7 +96,9 @@ async def ask_blackbox(playwright: Playwright, prompts: list[str], context_numbe
          await context.close()
          ic("restarting")
          return await ask_blackbox(playwright, prompts, context_number)
-   
+      if await verify_table_complete(new_page, context) == "incomplete":
+         return await ask_blackbox(playwright, prompts, context_number)
+
    no: int = await new_page.locator("code").count()
    if no != len(prompts):
       await context.close()
@@ -123,7 +125,17 @@ async def ask_blackbox(playwright: Playwright, prompts: list[str], context_numbe
    new_page_content: str = data
    await context.close()
    return new_page_content
-
+async def verify_table_complete(new_page, context):
+   no: int = await new_page.locator("code").count()
+   for i in range(no):
+      table: str = await new_page.locator("code").nth(i).inner_text()
+      industry_amount: int = len(re.findall(r'[0-9]{2}(?=[0-9]{1,2}\|)|(?<![0-9])([0-9]|[0-9]")(?!0)(?=[0-9]{1}\|.+\|.+\|.+\|.+\|.+|R)', table))
+      if industry_amount != 11:
+         await context.close()
+         print(table)
+         ic("restarting incomplete")
+         return "incomplete" 
+      
 async def change_free_gen_to_free_when_prompt_is_generating(page: Page, *, selector):
    
    # number_of_prompts_in_page: int = await page.locator("div.whitespace-pre-wrap").count()
@@ -178,22 +190,34 @@ async def send_prompt_to_blackbox_page_recursive_retry(page: Page, prompt: str) 
       # await send_prompt_to_blackbox_page_recursive_retry(page, prompt)
    
    
-async def send_prompt_to_blackbox_page(page: Page, prompt: str) -> str | None:
+async def send_prompt_to_blackbox_page(page: Page, prompt: str, prompt_no: int=0) -> str | None:
    send_button: Locator = page.locator("button[type='submit']")
    await expect(send_button).to_be_enabled(timeout=30000)
    chat_box: Locator = page.locator("textarea#chat-input-box")
    await chat_box.fill(prompt, timeout=20000)
    # await expect(send_button).to_be_enabled(timeout=100000)
    # await wait_for_free_gen_to_be_free()
-   await send_button.click()
    print(chat_box)
-   await page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
-   # await change_free_gen_to_free_when_prompt_is_generating(page, selector="div > pre")
-   try:
-      await expect(send_button).not_to_be_attached(timeout=20000)
-   except AssertionError:
+   await send_button.click()
+
+   expected_url = "https://www.blackbox.ai/api/chat"
+
+   async with page.expect_response(
+      lambda response: response.url == expected_url and response.status == 200
+   ) as response_info:
+   
       await send_button.click()
-      await expect(send_button).not_to_be_attached(timeout=30000)
+   print(await (await response_info.value).text())
+   
+   await page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
+      # await page.get_by_text("Update").click()
+   # await change_free_gen_to_free_when_prompt_is_generating(page, selector="div > pre")
+   # try:
+   #    await expect(send_button).not_to_be_attached(timeout=20000)
+   # except AssertionError:
+   #    await send_button.click()
+   #    await expect(send_button).not_to_be_attached(timeout=30000)
+   # # await expect(page.locator("code").nth(prompt_no)).to_gc 
    await expect(send_button).to_be_enabled(timeout=50000)
 
    # try:
@@ -214,12 +238,12 @@ async def init_new_page(context: BrowserContext):
 
    try:
       await new_page.goto("https://www.blackbox.ai/?model=gpt-4o", wait_until="domcontentloaded",timeout=20000)
-      await expect(new_page.locator("button[type='submit']")).to_be_enabled(timeout=30000)
+      await expect(new_page.locator("button[type='submit']")).to_be_enabled(timeout=10000)
       print("submit found")
       # ic()
    except Exception as e:
       print(e)
-      await new_page.close()
+      await context.close()
       return await init_new_page(context)
 
    else:return new_page
@@ -246,7 +270,7 @@ async def init_playwright_page(playwright: Playwright, reload_blackbox: bool=Fal
 
 async def init_playwright_new_context(playwright: Playwright) -> BrowserContext:
    # browser: Browser = await setup_browser(playwright)
-   browser: Browser = await playwright.chromium.launch(channel="msedge", headless=True)
+   browser: Browser = await playwright.chromium.launch(channel="msedge", headless=False)
 
    default_context: BrowserContext = await browser.new_context(viewport={'width': 1280, 'height': 720})
    # await default_context.new_page()
