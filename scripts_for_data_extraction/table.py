@@ -60,12 +60,12 @@ async def run():
          content_list = re.findall(r'[0-9]{1,2}\|.+\|.+\|.+\|.+\|.+', table)
          ic(len(content_list))
          if len(content_list) % 10 != 0:
-            industry = re.search(r'(?<=\|\|\|)([^|]*?)(?=\s+\|\|\|)', table).group(1)
+            industry = re.search(r'(?<=\|\|\|)([^|]*?)(?=\s+\|\|\|)', table).group(1) # type: ignore
             ic(industry)
             industry_list.append(industry)
          if industry_list:country_dict[country] = industry_list
       print(country_dict)
-   await write_country_list_without_filelock(country_dict, "information_files/country_incomplete.json")
+   # await write_country_list_without_filelock(country_dict, "information_files/country_incomplete.json")
             
             
 
