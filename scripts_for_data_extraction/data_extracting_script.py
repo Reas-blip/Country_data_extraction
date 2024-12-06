@@ -80,9 +80,9 @@ async def main() -> None:
 
    # concurrency_limit = 3
    retry_dict = await read_industry_dict_from_file(r"information_files\country_incomplete.json")
-   industry_dict: dict[str, list[str]] = await read_industry_dict_from_file("information_files/text.json")
-   for country, industry_list in retry_dict.items():
-      await retry_per_country(industry_dict, country, industry_list)
+   # industry_dict: dict[str, list[str]] = await read_industry_dict_from_file("information_files/text.json")
+   # for country, industry_list in retry_dict.items():
+   #    await retry_per_country(industry_dict, country, industry_list)
    for country in retry_dict.keys():
       await extract_data_for_each_country(country)
 

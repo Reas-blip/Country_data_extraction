@@ -32,7 +32,7 @@ async def extract_prompt_data(html_file_dir: Path | str, industry: str, data: st
       # subindustry = re.findall(r'(?<=\|\|\|)(.*)\b', prompt_data)[0] 
       prompt_data = re.sub(r'\|\|\|(.*)\b', "", prompt_data) # type: ignore
       print(subindustry)
-      data += f"|||{subindustry.capitalize()}\n{prompt_data}\n"
+      data += f"|||{subindustry.capitalize()}\n{prompt_data}\n\n"
       subindustry_completed_list.append(subindustry)
       await append_prompt_data_to_file(save_data_file_dir, data)
       data = ""
