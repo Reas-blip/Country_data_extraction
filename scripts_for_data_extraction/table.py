@@ -15,20 +15,21 @@ async def append_prompt_data_to_file(csv_file_path:  Path | str, prompt_table_da
 
 async def extract_prompt_data(html_file_dir: Path | str, industry: str, data: str="", save_data_file_dir: Path | str="industry_data.csv") -> None:
    # html_text = ""
- 
+   industry_dict: dict[str, list[str]] = await read_industry_dict_from_file("information_files/text.json")
    with open(html_file_dir, "r") as file:
       html_text: str = file.read()
-   
+   print(html_file_dir)
    table_list = re.findall(r'<code[^>]*bash[^>]>\s*(?=[^|]+?\|[^|]+?\|)([^<]+)<', html_text)   
    reference_list = []
    subindustry_completed_list = []
-   data += f"|||{industry.capitalize()}\n"
+   data += f"|||{industry.title()}\n"
    print(len(table_list))
    
-   for prompt_data in table_list:
+   for prompt_data, subindustry in zip(table_list, industry_dict[industry.title()]):
       prompt_data: str = await remove_amp_string(prompt_data)
       prompt_data = re.sub(r'[0-9]{2}(?=.{1,2}\|)|(?<![0-9])([0-9]|[0-9]")(?!0)(?=.{1}\||R)', "", prompt_data)
-      subindustry = re.findall(r'(?<=\|\|\|)(.*)\b', prompt_data)[0] 
+      print(prompt_data)
+      # subindustry = re.findall(r'(?<=\|\|\|)(.*)\b', prompt_data)[0] 
       prompt_data = re.sub(r'\|\|\|(.*)\b', "", prompt_data) # type: ignore
       print(subindustry)
       data += f"|||{subindustry.capitalize()}\n{prompt_data}\n"

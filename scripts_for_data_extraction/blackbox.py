@@ -86,38 +86,27 @@ async def ask_blackbox(playwright: Playwright, prompts: list[str], context_numbe
    context: BrowserContext = await init_playwright_new_context(playwright)
    new_page: Page = await init_new_page(context)
    subindustry_list  = []
+   table_text_list  = []
    for prompt in prompts:
       ic(context_number)
-      send_prompt = await send_prompt_to_blackbox_page_recursive_retry(new_page, prompt)
-      ic(send_prompt)
+      table_text = await send_prompt_to_blackbox_page_recursive_retry(new_page, prompt)
+      table_text = re.search(r'(?<=```)([\w\W]*)(?=```)', table_text).group(1) # type: ignore
       subindustry_match = re.search(r'(?<=in the )(.*?)(?= Sector)', prompt)
       subindustry_list.append(subindustry_match.group(1)) # type: ignore
-      if send_prompt == "prompt failed":
-         await context.close()
-         ic("restarting")
-         return await ask_blackbox(playwright, prompts, context_number)
-      if await verify_table_complete(new_page, context) == "incomplete":
-         return await ask_blackbox(playwright, prompts, context_number)
-
-   no: int = await new_page.locator("code").count()
-   if no != len(prompts):
+      table_text_list.append(table_text)   
+      # print(table_text)   
+   if len(table_text_list) != len(prompts):
       await context.close()
       ic("restarting prompt")
       return await ask_blackbox(playwright, prompts, context_number)
-   
+    
    data: str = ""
-   for i in range(no):
-      table: str = await new_page.locator("code").nth(i).inner_text()
-      industry_amount: int = len(re.findall(r'[0-9]{2}(?=.{1,2}\|)|(?<![0-9])([0-9]|[0-9]")(?!0)(?=.{1}\||R)', table))
-      if industry_amount != 11:
-         await context.close()
-         ic("restarting incomplete")
-         return await ask_blackbox(playwright, prompts, context_number)
-         
-      data += f"<code bash'>{table.replace('\"', '', 1)}\n|||{subindustry_list[i]}<\n"
-   
+   for i,table_text in enumerate(table_text_list):
+      if not await verify_table_complete(table_text):
+         return await ask_blackbox(playwright, prompts, context_number)  
+      data += f"<code bash'>{table_text.replace('\"', '', 1)}\n|||{subindustry_list[i]}<\n"
+ 
    if not data: 
-      ic(no)
       await context.close()
       ic("restarting empty data")
       return await ask_blackbox(playwright, prompts, context_number)
@@ -125,16 +114,12 @@ async def ask_blackbox(playwright: Playwright, prompts: list[str], context_numbe
    new_page_content: str = data
    await context.close()
    return new_page_content
-async def verify_table_complete(new_page, context):
-   no: int = await new_page.locator("code").count()
-   for i in range(no):
-      table: str = await new_page.locator("code").nth(i).inner_text()
-      industry_amount: int = len(re.findall(r'[0-9]{2}(?=[0-9]{1,2}\|)|(?<![0-9])([0-9]|[0-9]")(?!0)(?=[0-9]{1}\|.+\|.+\|.+\|.+\|.+|R)', table))
-      if industry_amount != 11:
-         await context.close()
-         print(table)
-         ic("restarting incomplete")
-         return "incomplete" 
+async def verify_table_complete(table_text,):
+   industry_amount: int = len(re.findall(r'[0-9]{1,2}\|.+?\|.+?\|.+?\|.+?\|.+?', table_text))
+   if industry_amount != 10:
+      ic("incomplete")
+      return False
+   return True 
       
 async def change_free_gen_to_free_when_prompt_is_generating(page: Page, *, selector):
    
@@ -178,19 +163,24 @@ async def wait_for_free_gen_to_be_free() -> None:
       ic("continue")
       continue
       
-async def send_prompt_to_blackbox_page_recursive_retry(page: Page, prompt: str) -> Literal['success'] | Literal['prompt failed']:
+async def send_prompt_to_blackbox_page_recursive_retry(page: Page, prompt: str):
    try:
-      await send_prompt_to_blackbox_page(page, prompt)
-      return "success"
+      table_text: str = await send_prompt_to_blackbox_page(page, prompt)
+      if not await verify_table_complete(table_text):
+         table_text: str = await send_prompt_to_blackbox_page_recursive_retry(page, prompt)
+      print("success")
+      return table_text
    except AssertionError as e:
+      await page.reload()
       print(e)
-      return "prompt failed"
+      return await send_prompt_to_blackbox_page_recursive_retry(page, prompt)
+
    # else: return "success"
       # print("prompt failed")
       # await send_prompt_to_blackbox_page_recursive_retry(page, prompt)
    
    
-async def send_prompt_to_blackbox_page(page: Page, prompt: str, prompt_no: int=0) -> str | None:
+async def send_prompt_to_blackbox_page(page: Page, prompt: str, prompt_no: int=0) -> str:
    send_button: Locator = page.locator("button[type='submit']")
    await expect(send_button).to_be_enabled(timeout=30000)
    chat_box: Locator = page.locator("textarea#chat-input-box")
@@ -198,7 +188,7 @@ async def send_prompt_to_blackbox_page(page: Page, prompt: str, prompt_no: int=0
    # await expect(send_button).to_be_enabled(timeout=100000)
    # await wait_for_free_gen_to_be_free()
    print(chat_box)
-   await send_button.click()
+   # await send_button.click()
 
    expected_url = "https://www.blackbox.ai/api/chat"
 
@@ -207,19 +197,11 @@ async def send_prompt_to_blackbox_page(page: Page, prompt: str, prompt_no: int=0
    ) as response_info:
    
       await send_button.click()
-   print(await (await response_info.value).text())
    
    await page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
-      # await page.get_by_text("Update").click()
-   # await change_free_gen_to_free_when_prompt_is_generating(page, selector="div > pre")
-   # try:
-   #    await expect(send_button).not_to_be_attached(timeout=20000)
-   # except AssertionError:
-   #    await send_button.click()
-   #    await expect(send_button).not_to_be_attached(timeout=30000)
-   # # await expect(page.locator("code").nth(prompt_no)).to_gc 
    await expect(send_button).to_be_enabled(timeout=50000)
 
+   return await (await response_info.value).text()
    # try:
    #    await expect(page.get_by_role("status")).to_be_attached(timeout=5000)
    #    await expect(page.get_by_role("status")).not_to_be_attached(timeout=5000)
@@ -270,7 +252,7 @@ async def init_playwright_page(playwright: Playwright, reload_blackbox: bool=Fal
 
 async def init_playwright_new_context(playwright: Playwright) -> BrowserContext:
    # browser: Browser = await setup_browser(playwright)
-   browser: Browser = await playwright.chromium.launch(channel="msedge", headless=False)
+   browser: Browser = await playwright.chromium.launch(channel="msedge", headless=True)
 
    default_context: BrowserContext = await browser.new_context(viewport={'width': 1280, 'height': 720})
    # await default_context.new_page()
