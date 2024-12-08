@@ -123,9 +123,6 @@ async def verify_table_complete(table_text,):
       
 async def change_free_gen_to_free_when_prompt_is_generating(page: Page, *, selector):
    
-   # number_of_prompts_in_page: int = await page.locator("div.whitespace-pre-wrap").count()
-   # if number_of_prompts_in_page == 0:
-   #    pass
    locator_tag: Locator = page.locator(selector)
    while True:
       if not locator_tag:
@@ -135,25 +132,6 @@ async def change_free_gen_to_free_when_prompt_is_generating(page: Page, *, selec
          await write_free_gen("free")
          break
       
-   # Check if the locator tag exists on the page
-   # for page in context.pages:
-   #    # Check if the page URL contains the specified domain
-   #    if domain not in page.url:
-   #       continue
-   #    number_of_prompts_in_page = await page.locator("div.whitespace-pre-wrap").count()
-   #    if number_of_prompts_in_page == 0: 
-   #       continue
-   #    locator_tag: Locator = page.locator(selector,
-   #                                        has_text=r'Ranking\|Company Name'
-   #                                        ).nth(number_of_prompts_in_page-1)
-   #    # Check if the locator tag exists on the page
-   #    # await expect(locator_tag).to_be_attached()
-   #    await expect(locator_tag).to_contain_text(re.compile(r'Ranking\|Company Name'), timeout=6000)
-   #    await expect(page.get_by_label("Stop streaming")).to_be_attached(timeout=70000)
-   #    # if await .count() > 0:
-   #    #    return True
-   #    # return False
-
 async def wait_for_free_gen_to_be_free() -> None:
    free_gen: str = await read_free_gen()
    while free_gen != "free": 
@@ -163,7 +141,7 @@ async def wait_for_free_gen_to_be_free() -> None:
       ic("continue")
       continue
       
-async def send_prompt_to_blackbox_page_recursive_retry(page: Page, prompt: str):
+async def send_prompt_to_blackbox_page_recursive_retry(page: Page, prompt: str):# -> Any | str:
    try:
       table_text: str = await send_prompt_to_blackbox_page(page, prompt)
       if not await verify_table_complete(table_text):
@@ -174,21 +152,13 @@ async def send_prompt_to_blackbox_page_recursive_retry(page: Page, prompt: str):
       await page.reload()
       print(e)
       return await send_prompt_to_blackbox_page_recursive_retry(page, prompt)
-
-   # else: return "success"
-      # print("prompt failed")
-      # await send_prompt_to_blackbox_page_recursive_retry(page, prompt)
-   
    
 async def send_prompt_to_blackbox_page(page: Page, prompt: str, prompt_no: int=0) -> str:
    send_button: Locator = page.locator("button[type='submit']")
    await expect(send_button).to_be_enabled(timeout=30000)
    chat_box: Locator = page.locator("textarea#chat-input-box")
    await chat_box.fill(prompt, timeout=20000)
-   # await expect(send_button).to_be_enabled(timeout=100000)
-   # await wait_for_free_gen_to_be_free()
    print(chat_box)
-   # await send_button.click()
 
    expected_url = "https://www.blackbox.ai/api/chat"
 
@@ -202,46 +172,25 @@ async def send_prompt_to_blackbox_page(page: Page, prompt: str, prompt_no: int=0
    await expect(send_button).to_be_enabled(timeout=50000)
 
    return await (await response_info.value).text()
-   # try:
-   #    await expect(page.get_by_role("status")).to_be_attached(timeout=5000)
-   #    await expect(page.get_by_role("status")).not_to_be_attached(timeout=5000)
-   # except AssertionError:
-   #    ...
    
 
 
 async def init_new_page(context: BrowserContext):
-   # browser: Browser = page.context.browser # type: ignore
-   # context: BrowserContext = page.context # type: ignore
-   # await context.clear_cookies()
    ic("new page")
    new_page: Page = await context.new_page()
-   # await stealth_async(new_page)
 
    try:
       await new_page.goto("https://www.blackbox.ai/?model=gpt-4o", wait_until="domcontentloaded",timeout=20000)
       await expect(new_page.locator("button[type='submit']")).to_be_enabled(timeout=10000)
       print("submit found")
-      # ic()
    except Exception as e:
       print(e)
       await context.close()
       return await init_new_page(context)
 
    else:return new_page
-   # context: BrowserContext = page.context # type: ignore
-   # await context.clear_cookies(domain=re.compile("blackbox"))
-   # new_page: Page = await context.new_page()
-   # await new_page.goto("https://chatgpt.com/")
-   # try:
-   #    await expect(new_page.locator("button > span", has_text="Summarize text").first).to_be_enabled(timeout=10000)
-   # except AssertionError:
-   #    await expect(new_page.locator("div.truncate").first).to_be_enabled(timeout=10000)
-      
-   # return new_page
    
 async def init_playwright_page(playwright: Playwright, reload_blackbox: bool=False) -> Page:
-   # browser: Browser = await setup_browser(playwright)
    browser: Browser = await playwright.chromium.launch(channel="msedge", headless=True)
    
    default_context: BrowserContext = browser.contexts[0]
@@ -251,12 +200,9 @@ async def init_playwright_page(playwright: Playwright, reload_blackbox: bool=Fal
    return page
 
 async def init_playwright_new_context(playwright: Playwright) -> BrowserContext:
-   # browser: Browser = await setup_browser(playwright)
    browser: Browser = await playwright.chromium.launch(channel="msedge", headless=True)
 
    default_context: BrowserContext = await browser.new_context(viewport={'width': 1280, 'height': 720})
-   # await default_context.new_page()
-   # await setup_new_context(default_context, context_nubmer)
    
    return default_context
 
@@ -280,33 +226,6 @@ async def reload_blackbox_page(page: Page):
       await expect(page.get_by_text("What can I help with?")).to_be_visible(timeout=10000)
    except AssertionError:
       await page.goto("https://chatgpt.com/")
-      # try: 
-      #    await expect(page.get_by_text("Stay logged out")).to_be_visible(timeout=10000)
-      #    await page.get_by_text("Stay logged out").click()
-      # except AssertionError:
-         # await reload_blackbox_page(page)
-   
-   # try:
-   #    # Try to locate the element with the specified text
-   #    element = await page.wait_for_selector("text=Stay logged out", timeout=5000)
-      
-   #    # If the element is found, click it
-   #    if element:
-   #          await element.click()
-   #          print("Clicked 'Stay logged out' link successfully!")
-   #    else:
-   #          print("'Stay logged out' link not found.")
-
-   # except:
-   #    print("'Stay logged out' link not found within the timeout period.")
-
-# async def gather(playwright, prompts, context_nubmer):
-#    context = await init_playwright_new_context(playwright, context_nubmer)
-#    task = ask_blackbox(context, prompts, context_nubmer)
-#    for i in context.pages:
-#       if "blackbox" in i.url:
-#          task1 = check_login_poppup(i)
-#    await asyncio.gather(task, task1)
 
 async def run(prompts, context_nubmer=1, reload_blackbox: bool=False):# -> Any | str:
    async with async_playwright() as playwright:
@@ -322,15 +241,9 @@ async def extract_table_data(html_text: str):
    
    column_list: list[str] = re.findall(r'<th>\s*<strong>\s*([\w\s]+)\s*</strong>', html_text_amp_removed)
    table_str += "| ".join(column_list) + "\n"
-   
-
 
 async def main():
    with open("table.html", "r") as file:
       html_text: str = file.read()
    
    ic(await extract_table_data(html_text))
-
-# if "__main__" == __name__ :
-#    # asyncio.run(run("whats up"))
-#    # main()
