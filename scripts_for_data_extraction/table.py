@@ -6,8 +6,6 @@ import asyncio
 import aiofiles
 from icecream import ic
 
-# from scripts_for_data_extraction.data_extracting_script import write_country_to_resume_temp_file
-
 async def append_prompt_data_to_file(csv_file_path:  Path | str, prompt_table_data: str):
    async with aiofiles.open(csv_file_path, "a") as csv_file:
       # print()
@@ -65,19 +63,6 @@ async def run():
             industry_list.append(industry)
          if industry_list:country_dict[country] = industry_list
       print(country_dict)
-   # await write_country_list_without_filelock(country_dict, "information_files/country_incomplete.json")
-            
-            
-
-   # await write_country_list_without_filelock(country_list, "country.json")
-      # print(file)
-      # await extract_prompt_data(file, industry, "ghana.csv")
-   # with open("industry_data.csv", "r")as filee:
-   #    industry_dict = filee.read()
-   # for html_dir in path.rglob("*.html"):
-   #    print(html_dir)
-   #    c+=await extract_prompt_data(c,html_dir, html_dir.name.strip(".html"))
-   # print(html_dir)
 
 async def read_industry_dict_from_file(file_path: str) -> dict[str, list[str]]:
    with open(file_path, "r") as file:
@@ -87,25 +72,23 @@ async def write_country_list_without_filelock(country_list: list[str], file_path
    with open(file_path, "w") as file:
       file.write(json.dumps(country_list))
 
-
-
    
-# def main():
+def main():
    # i used this to correct the incomplete response chatgbt give and replaced it with
    # complete one which was in the html content an example is in industry/example.html
-   # parent = Path(r"C:\Users\Okeniyi Treasure\Documents\Python\requests\industries")
-   # for html in parent.glob("*.html"):
-   #    with open(html, "r") as file:
-   #       html_content = file.read()
+   parent = Path(r"C:\Users\Okeniyi Treasure\Documents\Python\requests\industries")
+   for html in parent.glob("*.html"):
+      with open(html, "r") as file:
+         html_content = file.read()
       
-   #    completed = re.search("```([^`]*)```", html_content)
-   #    completed_data  = completed.group(1)
-   #    print(completed_data)
-   #    html_content = re.sub(r"```[^`]*```", "", html_content)
-   #    incompelete = re.findall(r'<code[^>]*bash\">\s*([^<]*)<', html_content)[-1]
-   #    html_content = html_content.replace(incompelete, completed_data)
-   #    with open(html, "w") as file:
-   #       file.write(html_content)
+      completed = re.search("```([^`]*)```", html_content)
+      completed_data  = completed.group(1)
+      print(completed_data)
+      html_content = re.sub(r"```[^`]*```", "", html_content)
+      incompelete = re.findall(r'<code[^>]*bash\">\s*([^<]*)<', html_content)[-1]
+      html_content = html_content.replace(incompelete, completed_data)
+      with open(html, "w") as file:
+         file.write(html_content)
    
 async def remove_amp_string(html_text) -> str:
    return re.sub("amp;", "", html_text)
